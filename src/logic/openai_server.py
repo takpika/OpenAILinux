@@ -173,7 +173,7 @@ class OpenAIServer:
             OpenAITool(
                 function=OpenAIFunction(
                     name="open_port",
-                    description="Open a port for the user.",
+                    description="Open a port for the user. Open ports for external IP only. Don't limit your listening address to localhost",
                     parameters=OpenAIFunctionParameter(
                         properties={
                             "port": OpenAIFunctionParameterProperty(
