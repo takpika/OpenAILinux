@@ -64,7 +64,7 @@ class OpenAIServer:
         if port // 10000 == 3:
             message = "reserved port"
         if message == "":
-            self.server.ports.append(port)
+            self.server.openPort(port)
         return {"result": "ok" if message == "" else "failed", "message": message}
     
     def close_port(self, port: int):
@@ -73,7 +73,7 @@ class OpenAIServer:
         if not port in self.server.ports:
             message = "the port is not opened"
         if message == "":
-            self.server.ports.remove(port)
+            self.server.closePort(port)
         return {"result": "ok" if message == "" else "failed", "message": message}
     
     def reset_all(self):
