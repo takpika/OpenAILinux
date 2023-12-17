@@ -21,6 +21,7 @@ class DockerServer:
         self.homeDir = "/root"
         self.ports = []
         self.logger = logging.getLogger(self.__class__.__name__+ "-" + self.containerName)
+        self.logger.level = logging.INFO
         if not self.checkDockerInstalled():
             self.logger.error("Docker is not installed")
             exit(1)
@@ -28,7 +29,7 @@ class DockerServer:
     def start(self):
         if not self.isRunning():
             logging.info(f"Starting Container")
-            subprocess.run(["docker", "run", "--name", f"{self.containerName}.{self.id}", "-d", "--rm", f"--memory={self.ram}", f"--memory-swap={self.swap}", f"--cpus={self.cpu}", self.containerName])
+            subprocess.run(["docker", "run", "-P", "--name", f"{self.containerName}.{self.id}", "-d", "--rm", f"--memory={self.ram}", f"--memory-swap={self.swap}", f"--cpus={self.cpu}", self.containerName, "tail", "-f", "/dev/null"])
             for port in self.ports:
                 self.openPort(port)
         self._running = True
@@ -50,7 +51,7 @@ class DockerServer:
         return len(proc.stdout) > 0
     
     def runCommand(self, cmd: str) -> subprocess.CompletedProcess[str]:
-        proc = subprocess.run(["docker", "exec", "-w", self.workDir, f"{self.containerName}.{self.id}", "timeout", str(600), "bash", "-c", "cmd"], capture_output=True, text=True)
+        proc = subprocess.run(["docker", "exec", "-w", self.workDir, f"{self.containerName}.{self.id}", "timeout", str(600), "bash", "-c", cmd], capture_output=True, text=True)
         return proc
     
     def checkFolder(self, path: str) -> bool:
@@ -65,14 +66,20 @@ class DockerServer:
         givenWorkDirList = path.split("/")
         if len(givenWorkDirList) < 1:
             return None
+        if not path[0] == "/" and not givenWorkDirList[0] == "~" and not givenWorkDirList[0] == "." and not givenWorkDirList[0] == ".." and not self.workDir == "/":
+            givenWorkDirList[0] = self.workDir + "/" + givenWorkDirList[0]
         if not path[0] == "/" and givenWorkDirList[0] == ".":
             givenWorkDirList[0] = self.workDir
         if givenWorkDirList[0] == "~":
             givenWorkDirList[0] = self.homeDir
+        if givenWorkDirList[0] == "..":
+            givenWorkDirList.insert(0, self.workDir)
         newPath = ""
         for i in range(len(givenWorkDirList)):
             if len(givenWorkDirList) < 1:
                 continue
+            if i > 0 and givenWorkDirList[i] == "" and not path == "/":
+                return None
             if i > 0 and givenWorkDirList[i] == "~":
                 return None
             if givenWorkDirList[i] == ".":
@@ -85,7 +92,9 @@ class DockerServer:
                 if newPath[0] != "/":
                     newPath = "/" + newPath
             else:
-                newPath += ("/" if not (len(newPath) == 0 or newPath == "/" or i == 0) else "") + givenWorkDirList[i]
+                newPath += ("/" if not (newPath.endswith("/") or givenWorkDirList[i].startswith("/")) else "") + givenWorkDirList[i]
+            if len(newPath) == 0:
+                newPath = "/"
             if newPath[-1] == "/" and not newPath == "/":
                 newPath = newPath[:-1]
         return newPath
