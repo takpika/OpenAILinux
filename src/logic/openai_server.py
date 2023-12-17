@@ -59,21 +59,15 @@ class OpenAIServer:
     def open_port(self, port: int):
         self.logger.info(f"Opening port: {port}")
         message = ""
-        if port in self.server.ports:
-            message = "already opened"
         if port // 10000 == 3:
             message = "reserved port"
         if message == "":
-            self.server.openPort(port)
+            message = "" if self.server.openPort(port) else "already opened"
         return {"result": "ok" if message == "" else "failed", "message": message}
     
     def close_port(self, port: int):
         self.logger.info(f"Closing port: {port}")
-        message = ""
-        if not port in self.server.ports:
-            message = "the port is not opened"
-        if message == "":
-            self.server.closePort(port)
+        message = "" if self.server.closePort(port) else "already closed"
         return {"result": "ok" if message == "" else "failed", "message": message}
     
     def reset_all(self):

@@ -19,7 +19,7 @@ class DockerServer:
         self._running = False
         self.workDir = "/root"
         self.homeDir = "/root"
-        self.ports = []
+        self.ports = {}
         self.logger = logging.getLogger(self.__class__.__name__+ "-" + self.containerName)
         self.logger.level = logging.INFO
         if not self.checkDockerInstalled():
@@ -127,16 +127,13 @@ class DockerServer:
         if port in self.ports:
             return False
         mappedPort = port % 10000 + 30000
-        subprocess.run(["iptables", "-t", "nat", "-A", "PREROUTING", "-p", "tcp", "--dport", str(mappedPort), "-j", "DNAT", "--to-destination", f"{self.checkIPAddress()}:{port}"])
-        subprocess.run(["iptables", "-t", "nat", "-A", "POSTROUTING", "-p", "tcp", "-d", f"{self.checkIPAddress()}", "--dport", str(port), "-j", "MASQUERADE"])
-        self.ports.append(port)
+        proc = subprocess.Popen(["socat", f"TCP-LISTEN:{mappedPort},fork,reuseaddr", f"TCP:{self.checkIPAddress()}:{port}"])
+        self.ports[port] = proc
         return True
     
     def closePort(self, port: int) -> bool:
         if not port in self.ports:
             return False
-        mappedPort = port % 10000 + 30000
-        subprocess.run(["iptables", "-t", "nat", "-D", "PREROUTING", "-p", "tcp", "--dport", str(mappedPort), "-j", "DNAT", "--to-destination", f"{self.checkIPAddress()}:{port}"])
-        subprocess.run(["iptables", "-t", "nat", "-D", "POSTROUTING", "-p", "tcp", "-d", f"{self.checkIPAddress()}", "--dport", str(port), "-j", "MASQUERADE"])
-        self.ports.remove(port)
+        self.ports[port].kill()
+        del self.ports[port]
         return True
