@@ -15,7 +15,7 @@ class OpenAIServer:
         self.jobs = {}
         self.runningLock = False
         self.server = DockerServer("ubuntu-systemd", "openai", 2.0, "2gb", "2gb")
-        self.logger = logging.getLogger(self.__name__)
+        self.logger = logging.getLogger(self.__class__.__name__)
         self.client = OpenAI(api_key=token)
 
     def exec_command(self, cmd) -> dict[str, any]:

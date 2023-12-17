@@ -20,7 +20,7 @@ class DockerServer:
         self.workDir = "/root"
         self.homeDir = "/root"
         self.ports = []
-        self.logger = logging.getLogger(self.__name__ + "-" + self.containerName)
+        self.logger = logging.getLogger(self.__class__.__name__+ "-" + self.containerName)
         if not self.checkDockerInstalled():
             self.logger.error("Docker is not installed")
             exit(1)

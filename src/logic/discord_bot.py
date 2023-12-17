@@ -11,7 +11,7 @@ class DiscordBot:
         self.client = discord.Client(intents=discord.Intents.all())
         self.isReady = False
         self.openAI = OpenAIServer(token=openAIToken)
-        self.logger = logging.getLogger(self.__name__)
+        self.logger = logging.getLogger(self.__class__.__name__)
 
     def run(self):
         try:
