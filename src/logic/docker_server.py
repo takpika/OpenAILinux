@@ -127,7 +127,10 @@ class DockerServer:
         if port in self.ports:
             return False
         mappedPort = port % 10000 + 30000
-        proc = subprocess.Popen(["socat", f"TCP-LISTEN:{mappedPort},fork,reuseaddr", f"TCP:{self.checkIPAddress()}:{port}"])
+        ipAddress = self.checkIPAddress()
+        if ipAddress is None:
+            return False
+        proc = subprocess.Popen(["socat", f"TCP-LISTEN:{mappedPort},fork,reuseaddr", f"TCP:{ipAddress}:{port}"])
         self.ports[port] = proc
         return True
     
