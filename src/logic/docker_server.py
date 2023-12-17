@@ -115,8 +115,7 @@ class DockerServer:
     
     def writeRawFile(self, path: str, value: bytes) -> bool:
         fullPath = self.appendPath(path)
-        b64 = base64.b64encode(value).decode()
-        return self.runCommand(f"echo {b64} | base64 -d > {fullPath}").returncode == 0
+        return subprocess.run(["docker", "cp", "-", f"{self.containerName}.{self.id}:{fullPath}"], input=value).returncode == 0
     
     def checkIPAddress(self) -> str | None:
         proc = self.runCommand("ip addr show eth0 | grep -oP '(?<=inet\s)\d+(\.\d+){3}'")
