@@ -8,7 +8,7 @@ from logic.docker_server import DockerServer
 from model.openai_tool import OpenAIFunction, OpenAIFunctionParameter, OpenAIFunctionParameterProperty, OpenAITool
 from model.run_result import RunResult
 
-client = OpenAI(os.environ.get("OPENAI_API_KEY"))
+client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
 class OpenAIServer:
     def __init__(self, model="gpt-4-1106-preview"):
