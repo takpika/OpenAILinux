@@ -18,5 +18,5 @@ if userID is None or userID == "":
     exit(1)
 
 if __name__ == "__main__":
-    bot = DiscordBot(token=token, userID=int(userID))
+    bot = DiscordBot(token=token, userID=int(userID), openAIToken=openAIToken)
     bot.run()
