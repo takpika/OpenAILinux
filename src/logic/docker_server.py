@@ -127,8 +127,8 @@ class DockerServer:
         if port in self.ports:
             return False
         mappedPort = port % 10000 + 30000
-        subprocess.run(["iptables", "-t", "nat", "-A", "DOCKER", "!", "-i", "docker0", "-p", "tcp", "-m", "tcp", "--dport", str(mappedPort), "-j", "DNAT", "--to-destination", f"{self.checkIPAddress()}:{port}"])
-        subprocess.run(["iptables", "-t", "nat", "-A", "POSTROUTING", "-p", "tcp", "-m", "tcp", "--dport", str(port), "-j", "MASQUERADE"])
+        subprocess.run(["iptables", "-t", "nat", "-A", "PREROUTING", "-p", "tcp", "--dport", str(mappedPort), "-j", "DNAT", "--to-destination", f"{self.checkIPAddress()}:{port}"])
+        subprocess.run(["iptables", "-t", "nat", "-A", "OUTPUT", "-p", "tcp", "--dport", str(port), "-j", "DNAT", "--to-destination", f"{self.checkIPAddress()}:{mappedPort}"])
         self.ports.append(port)
         return True
     
@@ -136,7 +136,7 @@ class DockerServer:
         if not port in self.ports:
             return False
         mappedPort = port % 10000 + 30000
-        subprocess.run(["iptables", "-t", "nat", "-D", "DOCKER", "!", "-i", "docker0", "-p", "tcp", "-m", "tcp", "--dport", str(mappedPort), "-j", "DNAT", "--to-destination", f"{self.checkIPAddress()}:{port}"])
-        subprocess.run(["iptables", "-t", "nat", "-D", "POSTROUTING", "-p", "tcp", "-m", "tcp", "--dport", str(port), "-j", "MASQUERADE"])
+        subprocess.run(["iptables", "-t", "nat", "-D", "PREROUTING", "-p", "tcp", "--dport", str(mappedPort), "-j", "DNAT", "--to-destination", f"{self.checkIPAddress()}:{port}"])
+        subprocess.run(["iptables", "-t", "nat", "-D", "OUTPUT", "-p", "tcp", "--dport", str(port), "-j", "DNAT", "--to-destination", f"{self.checkIPAddress()}:{mappedPort}"])
         self.ports.remove(port)
         return True
