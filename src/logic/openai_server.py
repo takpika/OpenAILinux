@@ -1,14 +1,14 @@
 import json
 import logging
+import os
 from openai import OpenAI
 from time import sleep, time
-import discord
 
 from logic.docker_server import DockerServer
 from model.openai_tool import OpenAIFunction, OpenAIFunctionParameter, OpenAIFunctionParameterProperty, OpenAITool
 from model.run_result import RunResult
 
-client = OpenAI()
+client = OpenAI(os.environ.get("OPENAI_API_KEY"))
 
 class OpenAIServer:
     def __init__(self, model="gpt-4-1106-preview"):
