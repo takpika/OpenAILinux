@@ -220,6 +220,8 @@ class OpenAIServer:
             self.runningLock = True
             pastActionsPrompt = "" if len(self.reports) > 0 else "N/A"
             if len(self.reports) > 0:
+                if len(self.reports) > 10:
+                    self.reports = self.reports[-10:]
                 for report in self.reports:
                     pastActionsPrompt += f"- {report}\n"
             portsPrompt = "" if len(self.server.ports) > 0 else "N/A"
