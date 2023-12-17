@@ -37,9 +37,9 @@ class DockerServer:
     def stop(self):
         if self.isRunning():
             logging.info(f"Stopping Container")
+            for port in self.ports:
+                self.closePort(port)
             subprocess.run(["docker", "stop", f"{self.containerName}.{self.id}"])
-        for port in self.ports:
-            self.closePort(port)
         self._running = False
 
     def checkDockerInstalled(self) -> bool:
