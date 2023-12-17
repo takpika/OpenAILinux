@@ -5,7 +5,7 @@ import logging
 from logic.openai_server import OpenAIServer
 
 class DiscordBot:
-    def __init__(self, token: str, userID: int):
+    def __init__(self, token: str, userID: int, openAIToken: str):
         self.userID = userID
         self.token = token
         self.client = discord.Client(intents=discord.Intents.all())

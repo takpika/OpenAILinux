@@ -8,16 +8,15 @@ from logic.docker_server import DockerServer
 from model.openai_tool import OpenAIFunction, OpenAIFunctionParameter, OpenAIFunctionParameterProperty, OpenAITool
 from model.run_result import RunResult
 
-client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
-
 class OpenAIServer:
-    def __init__(self, model="gpt-4-1106-preview"):
+    def __init__(self, token: str, model="gpt-4-1106-preview"):
         self.model = model
         self.reports = []
         self.jobs = {}
         self.runningLock = False
         self.server = DockerServer("ubuntu-systemd", "openai", 2.0, "2gb", "2gb")
         self.logger = logging.getLogger(self.__name__)
+        self.client = OpenAI(api_key=token)
 
     def exec_command(self, cmd) -> dict[str, any]:
         proc = self.server.runCommand(cmd=cmd)
@@ -201,7 +200,7 @@ class OpenAIServer:
             systemPrompt = f"You are the administrator of a Linux server.\n\nServer specs:\nCPU: {self.server.cpu}\nRAM: {self.server.ram.upper()}\nSwap: {self.server.swap.upper()}\nUser: root\n\nUse functions to respond to requests from users.\nBelow is a summary of the actions you have taken in the past.\n{pastActionsPrompt}\n\nPorts open to the user: {portsPrompt}"
             messages = [{"role": "system", "content": systemPrompt}, {"role": "user", "content": f"Here's a request from a user: {prompt}"}]
             while True:
-                response = client.chat.completions.create(
+                response = self.client.chat.completions.create(
                     model=self.model,
                     messages=messages,
                     tools=self.generateTools(),
