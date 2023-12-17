@@ -5,7 +5,7 @@ import base64
 class DockerServer:
     def __init__(
             self,
-            containerName: str = "ubuntu-systemd",
+            containerName: str = "ubuntu",
             id: str = "openai",
             cpu: float = 2.0,
             ram: str = "2gb",
@@ -28,7 +28,7 @@ class DockerServer:
     def start(self):
         if not self.isRunning():
             logging.info(f"Starting Container")
-            subprocess.run(["docker", "run", "--name", f"{self.containerName}.{self.id}", "-d", "--rm", "--privileged", "-v", "/sys/fs/cgroup:/sys/fs/croup:ro", f"--memory={self.ram}", f"--memory-swap={self.swap}", f"--cpus={self.cpu}", self.containerName])
+            subprocess.run(["docker", "run", "--name", f"{self.containerName}.{self.id}", "-d", "--rm", f"--memory={self.ram}", f"--memory-swap={self.swap}", f"--cpus={self.cpu}", self.containerName])
             for port in self.ports:
                 self.openPort(port)
         self._running = True
