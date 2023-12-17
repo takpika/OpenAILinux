@@ -74,7 +74,7 @@ class OpenAIServer:
                     name="exec_command",
                     description="Executes the given command. Can check output of up to 500 characters or 5 lines. Keyboard input is not available. Recommended to use `echo` command. Timeout is 1h. Work folder can be changed with `change_directory` Function.",
                     parameters=OpenAIFunctionParameter(
-                        parameters={
+                        properties={
                             "cmd": OpenAIFunctionParameterProperty(
                                 type="string"
                             )
@@ -88,7 +88,7 @@ class OpenAIServer:
                     name="change_directory",
                     description="Change the working directory to the given folder path.",
                     parameters=OpenAIFunctionParameter(
-                        parameters={
+                        properties={
                             "path": OpenAIFunctionParameterProperty(
                                 type="string"
                             )
@@ -102,7 +102,7 @@ class OpenAIServer:
                     name="call_myself",
                     description="This function will call you again at the given time.",
                     parameters=OpenAIFunctionParameter(
-                        parameters={
+                        properties={
                             "unixtime": OpenAIFunctionParameterProperty(
                                 type="int",
                                 description="I recommend calculating it first using the command."
@@ -121,7 +121,7 @@ class OpenAIServer:
                     name="write_report",
                     description="Once you have completed the instructions, be sure to do it at the end.",
                     parameters=OpenAIFunctionParameter(
-                        parameters={
+                        properties={
                             "description": OpenAIFunctionParameterProperty(
                                 type="string",
                                 description="A short one-sentence explanation of what you did."
@@ -136,7 +136,7 @@ class OpenAIServer:
                     name="write_file",
                     description="Creating or appending a text file",
                     parameters=OpenAIFunctionParameter(
-                        parameters={
+                        properties={
                             "path": OpenAIFunctionParameterProperty(
                                 type="string"
                             ),
@@ -158,7 +158,7 @@ class OpenAIServer:
                     name="open_port",
                     description="Open a port for the user.",
                     parameters=OpenAIFunctionParameter(
-                        parameters={
+                        properties={
                             "port": OpenAIFunctionParameterProperty(
                                 type="int",
                             )
@@ -172,7 +172,7 @@ class OpenAIServer:
                     name="close_port",
                     description="Close the ports you opened for the user",
                     parameters=OpenAIFunctionParameter(
-                        parameters={
+                        properties={
                             "port": OpenAIFunctionParameterProperty(
                                 type="int",
                             )
