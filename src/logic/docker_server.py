@@ -30,6 +30,7 @@ class DockerServer:
         if not self.isRunning():
             logging.info(f"Starting Container")
             subprocess.run(["docker", "run", "-P", "--name", f"{self.containerName}.{self.id}", "-d", "--rm", f"--memory={self.ram}", f"--memory-swap={self.swap}", f"--cpus={self.cpu}", self.containerName, "tail", "-f", "/dev/null"])
+            self.runCommand("apt update && apt install -y iproute2")
             for port in self.ports:
                 self.openPort(port)
         self._running = True
