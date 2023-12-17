@@ -1,6 +1,7 @@
 import logging
 import subprocess
 import base64
+import os
 
 class DockerServer:
     def __init__(
@@ -38,7 +39,8 @@ class DockerServer:
     def stop(self):
         if self.isRunning():
             logging.info(f"Stopping Container")
-            for port in self.ports:
+            ports = self.ports.copy()
+            for port in ports:
                 self.closePort(port)
             subprocess.run(["docker", "stop", f"{self.containerName}.{self.id}"])
         self._running = False
@@ -115,7 +117,12 @@ class DockerServer:
     
     def writeRawFile(self, path: str, value: bytes) -> bool:
         fullPath = self.appendPath(path)
-        return subprocess.run(["docker", "cp", "-", f"{self.containerName}.{self.id}:{fullPath}"], input=value).returncode == 0
+        fileName = os.path.basename(fullPath)
+        if not os.path.exists(".temp"):
+            os.mkdir(".temp")
+        with open(f".temp/{fileName}", "wb") as f:
+            f.write(value)
+        return subprocess.run(["docker", "cp", f".temp/{fileName}", f"{self.containerName}.{self.id}:{fullPath}"]).returncode == 0
     
     def checkIPAddress(self) -> str | None:
         proc = self.runCommand("ip addr show eth0 | grep -oP '(?<=inet\s)\d+(\.\d+){3}'")
