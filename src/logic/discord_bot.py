@@ -21,6 +21,8 @@ class DiscordBot:
                 if self.isReady:
                     return
                 logging.info("Discord bot is Ready")
+                if self.openAI.server.isRunning():
+                    self.openAI.server.stop()
                 self.openAI.server.start()
                 self.isReady = True
                 try:
@@ -31,27 +33,56 @@ class DiscordBot:
 
             @self.client.event
             async def on_message(message: discord.Message):
-                if message.author.bot or message.guild != None:
-                    return
-                if message.author.id != self.userID:
-                    return
-                while self.openAI.runningLock:
-                    sleep(5)
-                attachmentPath = None
-                if len(message.attachments) > 0:
-                    attachmentPath = f"/tmp/{message.id}"
-                    self.openAI.server.runCommand(f"mkdir -p {attachmentPath}")
-                    for attachment in message.attachments:
-                        rawData = await attachment.read()
-                        self.openAI.server.writeRawFile(f"{attachmentPath}/{attachment.filename}", rawData)
-                embed = discord.Embed(title="実行中")
-                replyMessage = await message.reply(embed=embed)
-                await self.openAI.run(message.content, attachmentPath=attachmentPath)
-                embed.title = "実行完了"
-                embed.add_field(name="開放中のポート", value=(", ".join([str(port) for port in self.openAI.server.ports]) if len(self.openAI.server.ports) > 0 else "なし"))
-                if len(self.openAI.reports) > 0:
-                    embed.add_field(name="レポート", value=self.openAI.reports[-1])
-                await replyMessage.edit(embed=embed)
+                try:
+                    replyMessage = None
+                    if message.author.bot or message.guild != None:
+                        return
+                    if message.author.id != self.userID:
+                        return
+                    while self.openAI.runningLock:
+                        sleep(5)
+                    embed = discord.Embed()
+                    attachmentPath = None
+
+                    if len(message.attachments) > 0:
+                        embed.title = "ファイルをダウンロード中"
+                        embed.color = discord.Color.blue()
+                        embed.add_field(name="完了", value=str(0))
+                        embed.add_field(name="ファイル数", value=str(len(message.attachments)))
+
+                        replyMessage = await message.reply(embed=embed)
+                        attachmentPath = f"/tmp/{message.id}"
+                        self.openAI.server.runCommand(f"mkdir -p {attachmentPath}")
+                        for i in range(len(message.attachments)):
+                            attachment = message.attachments[i]
+                            rawData = await attachment.read()
+                            self.openAI.server.writeRawFile(f"{attachmentPath}/{attachment.filename}", rawData)
+                            embed.set_field_at(0, name="完了", value=str(i+1))
+                            await replyMessage.edit(embed=embed)
+
+                    embed.clear_fields()
+                    embed.title = "実行中"
+                    embed.color = discord.Color.blue()
+                    if replyMessage is None:
+                        replyMessage = await message.reply(embed=embed)
+                    else:
+                        await replyMessage.edit(embed=embed)
+
+                    await self.openAI.run(message.content, attachmentPath=attachmentPath)
+
+                    embed.title = "実行完了"
+                    embed.color = discord.Color.green()
+                    embed.add_field(name="開放中のポート", value=(", ".join([str(port) for port in self.openAI.server.ports]) if len(self.openAI.server.ports) > 0 else "なし"))
+                    if len(self.openAI.reports) > 0:
+                        embed.add_field(name="レポート", value=self.openAI.reports[-1])
+                    await replyMessage.edit(embed=embed)
+                    
+                except Exception as e:
+                    self.logger.error(e)
+                    embed.title = "エラー"
+                    embed.description = "```\n"+str(e)+"\n```"
+                    embed.color = discord.Color.red()
+                    await replyMessage.edit(embed=embed)
             
             self.client.run(token=self.token)
         finally:
